@@ -249,15 +249,16 @@ export function customPlugins({ files, declarationOrderFiles } = {}) {
 
   return [
     {
-      files: allFiles,
       plugins: { '@dds': { rules: ddsRules } },
+    },
+    {
+      files: allFiles,
       rules: {
         '@dds/no-repeated-inline-types': 'warn',
       },
     },
     {
       files: orderFiles,
-      plugins: { '@dds': { rules: ddsRules } },
       rules: {
         '@dds/declaration-order': 'warn',
       },
