@@ -158,7 +158,6 @@ export function react({ reactHooks, react, componentFiles, noConsoleFiles } = {}
       rules: {
         'react/jsx-key': 'error',
         'react/jsx-no-target-blank': 'error',
-        'react/jsx-no-leaked-render': ['error', { validStrategies: ['ternary'] }],
         'react/no-children-prop': 'warn',
       },
       settings: { react: { version: 'detect' } },
