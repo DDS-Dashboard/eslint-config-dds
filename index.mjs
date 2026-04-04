@@ -104,6 +104,11 @@ export function base({ tseslint, unusedImports, importX, tsconfigRootDir, allowD
       rules: {
         'import-x/no-self-import': 'error',
         'import-x/no-duplicates': 'error',
+        'import-x/order': ['warn', {
+          groups: ['builtin', 'external', 'internal', 'parent', 'sibling', 'index'],
+          'newlines-between': 'always',
+          alphabetize: { order: 'asc', caseInsensitive: true },
+        }],
       },
     },
 
