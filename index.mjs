@@ -19,6 +19,7 @@
 
 import localPlugin from './plugins/no-repeated-inline-types.mjs'
 import typesAtBottomPlugin from './plugins/types-at-bottom.mjs'
+import localsAtBottomPlugin from './plugins/locals-at-bottom.mjs'
 
 // ── Base TypeScript rules ───────────────────────────────────────────────────
 
@@ -248,10 +249,11 @@ export function customPlugins({ files } = {}) {
   return [
     {
       files: targetFiles,
-      plugins: { '@dds': { rules: { ...localPlugin.rules, ...typesAtBottomPlugin.rules } } },
+      plugins: { '@dds': { rules: { ...localPlugin.rules, ...typesAtBottomPlugin.rules, ...localsAtBottomPlugin.rules } } },
       rules: {
         '@dds/no-repeated-inline-types': 'warn',
         '@dds/types-at-bottom': 'warn',
+        '@dds/locals-at-bottom': 'warn',
       },
     },
   ]
