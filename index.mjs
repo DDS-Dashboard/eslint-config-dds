@@ -242,15 +242,23 @@ export function testing({ vitest, testingLibrary, testFiles, testingLibraryFiles
 /**
  * DDS custom ESLint plugins (no-repeated-inline-types).
  */
-export function customPlugins({ files } = {}) {
-  const targetFiles = files ?? ['src/**/*.{ts,tsx}', 'convex/**/*.ts', 'packages/*/src/**/*.{ts,tsx}']
+export function customPlugins({ files, declarationOrderFiles } = {}) {
+  const allFiles = files ?? ['src/**/*.{ts,tsx}', 'convex/**/*.ts', 'packages/*/src/**/*.{ts,tsx}']
+  const orderFiles = declarationOrderFiles ?? ['src/**/*.{ts,tsx}', 'packages/*/src/**/*.{ts,tsx}']
+  const ddsRules = { ...localPlugin.rules, ...declarationOrderPlugin.rules }
 
   return [
     {
-      files: targetFiles,
-      plugins: { '@dds': { rules: { ...localPlugin.rules, ...declarationOrderPlugin.rules } } },
+      files: allFiles,
+      plugins: { '@dds': { rules: ddsRules } },
       rules: {
         '@dds/no-repeated-inline-types': 'warn',
+      },
+    },
+    {
+      files: orderFiles,
+      plugins: { '@dds': { rules: ddsRules } },
+      rules: {
         '@dds/declaration-order': 'warn',
       },
     },
