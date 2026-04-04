@@ -18,6 +18,7 @@
  */
 
 import localPlugin from './plugins/no-repeated-inline-types.mjs'
+import typesAtBottomPlugin from './plugins/types-at-bottom.mjs'
 
 // ── Base TypeScript rules ───────────────────────────────────────────────────
 
@@ -243,12 +244,15 @@ export function testing({ vitest, testingLibrary, testFiles, testingLibraryFiles
  * DDS custom ESLint plugins (no-repeated-inline-types).
  */
 export function customPlugins({ files } = {}) {
+  const targetFiles = files ?? ['src/**/*.{ts,tsx}', 'convex/**/*.ts', 'packages/*/src/**/*.{ts,tsx}']
+
   return [
     {
-      files: files ?? ['src/**/*.{ts,tsx}', 'convex/**/*.ts', 'packages/*/src/**/*.{ts,tsx}'],
-      plugins: { '@dds': localPlugin },
+      files: targetFiles,
+      plugins: { '@dds': { rules: { ...localPlugin.rules, ...typesAtBottomPlugin.rules } } },
       rules: {
         '@dds/no-repeated-inline-types': 'warn',
+        '@dds/types-at-bottom': 'warn',
       },
     },
   ]
