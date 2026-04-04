@@ -244,7 +244,7 @@ export function testing({ vitest, testingLibrary, testFiles, testingLibraryFiles
  */
 export function customPlugins({ files, declarationOrderFiles } = {}) {
   const allFiles = files ?? ['src/**/*.{ts,tsx}', 'convex/**/*.ts', 'packages/*/src/**/*.{ts,tsx}']
-  const orderFiles = declarationOrderFiles ?? ['src/**/*.{ts,tsx}', 'packages/*/src/**/*.{ts,tsx}']
+  const orderFiles = declarationOrderFiles ?? ['src/**/*.{ts,tsx}', 'packages/*/src/**/*.{ts,tsx}', '!src/routes/**']
   const ddsRules = { ...localPlugin.rules, ...declarationOrderPlugin.rules }
 
   return [
