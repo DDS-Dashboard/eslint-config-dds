@@ -17,6 +17,8 @@
  *   ]
  */
 
+import stylistic from '@stylistic/eslint-plugin'
+
 import localPlugin from './plugins/no-repeated-inline-types.mjs'
 import declarationOrderPlugin from './plugins/declaration-order.mjs'
 
@@ -109,6 +111,15 @@ export function base({ tseslint, unusedImports, importX, tsconfigRootDir, allowD
           'newlines-between': 'always',
           alphabetize: { order: 'asc', caseInsensitive: true },
         }],
+      },
+    },
+
+    // Style rules (brace placement)
+    {
+      plugins: { '@stylistic': stylistic },
+      rules: {
+        '@stylistic/brace-style': ['warn', '1tbs'],
+        'curly': ['warn', 'all'],
       },
     },
 
