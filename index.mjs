@@ -114,12 +114,45 @@ export function base({ tseslint, unusedImports, importX, tsconfigRootDir, allowD
       },
     },
 
-    // Style rules (brace placement)
+    // Style rules
     {
       plugins: { '@stylistic': stylistic },
       rules: {
         '@stylistic/brace-style': ['warn', '1tbs'],
         'curly': ['warn', 'all'],
+        '@stylistic/padding-line-between-statements': [
+          'warn',
+
+          // Require blank line before return statements.
+          // Before:  const x = 1
+          //          return x
+          // After:   const x = 1
+          //
+          //          return x
+          { blankLine: 'always', prev: '*', next: 'return' },
+
+          // Require blank line after variable declarations to separate setup from logic.
+          // Before:  const x = 1
+          //          doSomething(x)
+          // After:   const x = 1
+          //
+          //          doSomething(x)
+          { blankLine: 'always', prev: ['const', 'let', 'var'], next: '*' },
+
+          // Allow consecutive variable declarations to stay grouped without blank lines.
+          // OK:      const x = 1
+          //          const y = 2
+          //          const z = 3
+          { blankLine: 'any', prev: ['const', 'let', 'var'], next: ['const', 'let', 'var'] },
+
+          // Require blank line between function declarations.
+          // Before:  function foo() {}
+          //          function bar() {}
+          // After:   function foo() {}
+          //
+          //          function bar() {}
+          { blankLine: 'always', prev: 'function', next: 'function' },
+        ],
       },
     },
 
