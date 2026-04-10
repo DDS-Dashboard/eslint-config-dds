@@ -80,6 +80,7 @@ export function base({ tseslint, unusedImports, importX, tsconfigRootDir, allowD
         '@typescript-eslint/no-redundant-type-constituents': 'error',
         'func-style': ['error', 'declaration'],
         'prefer-arrow-callback': 'error',
+        'prefer-const': ['error', { destructuring: 'any' }],
         'no-restricted-globals': [
           'error',
           { name: 'close', message: 'Use a more specific method instead of the global close()' },
