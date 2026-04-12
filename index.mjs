@@ -209,6 +209,16 @@ export function react({ reactHooks, react, componentFiles, noConsoleFiles } = {}
         'react/jsx-key': 'error',
         'react/jsx-no-target-blank': 'error',
         'react/no-children-prop': 'warn',
+        'no-restricted-syntax': ['error',
+          {
+            selector: "LogicalExpression[operator='&&'][right.type='JSXElement']",
+            message: 'Use ternary (`condition ? <Foo /> : null`) instead of `&&` for conditional rendering',
+          },
+          {
+            selector: "LogicalExpression[operator='&&'][right.type='JSXFragment']",
+            message: 'Use ternary (`condition ? <Foo /> : null`) instead of `&&` for conditional rendering',
+          },
+        ],
       },
       settings: { react: { version: 'detect' } },
     })
