@@ -21,6 +21,7 @@ import stylistic from '@stylistic/eslint-plugin'
 
 import localPlugin from './plugins/no-repeated-inline-types.mjs'
 import declarationOrderPlugin from './plugins/declaration-order.mjs'
+import paddingPlugin from './plugins/padding-around-statements.mjs'
 
 // ── Base TypeScript rules ───────────────────────────────────────────────────
 
@@ -328,10 +329,11 @@ export function customPlugins({ files } = {}) {
   return [
     {
       files: targetFiles,
-      plugins: { '@dds': { rules: { ...localPlugin.rules, ...declarationOrderPlugin.rules } } },
+      plugins: { '@dds': { rules: { ...localPlugin.rules, ...declarationOrderPlugin.rules, ...paddingPlugin.rules } } },
       rules: {
         '@dds/no-repeated-inline-types': 'warn',
         '@dds/declaration-order': 'warn',
+        '@dds/padding-around-statements': 'warn',
       },
     },
   ]
