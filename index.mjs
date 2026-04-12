@@ -146,6 +146,22 @@ export function base({ tseslint, unusedImports, importX, tsconfigRootDir, allowD
           //          const z = 3
           { blankLine: 'any', prev: ['const', 'let', 'var'], next: ['const', 'let', 'var'] },
 
+          // Require blank line after if blocks to separate guard clauses from logic.
+          // Before:  if (!x) { return }
+          //          doSomething()
+          // After:   if (!x) { return }
+          //
+          //          doSomething()
+          { blankLine: 'always', prev: 'if', next: '*' },
+
+          // Require blank line before try blocks.
+          // Before:  doSomething()
+          //          try {
+          // After:   doSomething()
+          //
+          //          try {
+          { blankLine: 'always', prev: '*', next: 'try' },
+
           // Require blank line between function declarations.
           // Before:  function foo() {}
           //          function bar() {}
