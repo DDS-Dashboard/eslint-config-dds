@@ -6,11 +6,14 @@
  *   import tseslint from 'typescript-eslint'
  *   import unusedImports from 'eslint-plugin-unused-imports'
  *   import importX from 'eslint-plugin-import-x'
+ *   import reactHooks from 'eslint-plugin-react-hooks'
+ *   import react from 'eslint-plugin-react'
+ *   import reactYouMightNotNeedAnEffect from 'eslint-plugin-react-you-might-not-need-an-effect'
  *
  *   export default [
  *     { ignores: ['dist/**', ...] },
  *     ...base({ tseslint, unusedImports, importX, tsconfigRootDir: import.meta.dirname }),
- *     ...react({ reactHooks, react }),
+ *     ...react({ reactHooks, react, reactYouMightNotNeedAnEffect }),
  *     ...convex(),
  *     ...testing({ vitest, testingLibrary }),
  *     ...customPlugins(),
@@ -194,10 +197,11 @@ export function base({ tseslint, unusedImports, importX, tsconfigRootDir, allowD
  * @param {object} opts
  * @param {object} [opts.reactHooks] - eslint-plugin-react-hooks
  * @param {object} [opts.react] - eslint-plugin-react
+ * @param {object} [opts.reactYouMightNotNeedAnEffect] - eslint-plugin-react-you-might-not-need-an-effect
  * @param {string[]} [opts.componentFiles] - Glob patterns for React files
  * @param {string[]} [opts.noConsoleFiles] - Glob patterns where console.log is banned
  */
-export function react({ reactHooks, react, componentFiles, noConsoleFiles } = {}) {
+export function react({ reactHooks, react, reactYouMightNotNeedAnEffect, componentFiles, noConsoleFiles } = {}) {
   const compFiles = componentFiles ?? ['src/**/*.{ts,tsx}', 'packages/*/src/**/*.{ts,tsx}']
   const jsxFiles = componentFiles ?? ['src/**/*.{tsx,jsx}', 'packages/*/src/**/*.{tsx,jsx}']
   const consoleFiles = noConsoleFiles ?? [
@@ -219,6 +223,13 @@ export function react({ reactHooks, react, componentFiles, noConsoleFiles } = {}
         'react-hooks/refs': 'warn',
         'react-hooks/set-state-in-effect': 'warn',
       },
+    })
+  }
+
+  if (reactYouMightNotNeedAnEffect) {
+    configs.push({
+      ...reactYouMightNotNeedAnEffect.configs.recommended,
+      files: compFiles,
     })
   }
 

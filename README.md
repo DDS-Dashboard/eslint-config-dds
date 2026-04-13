@@ -12,7 +12,7 @@ Optional peer dependencies (install only what you need):
 
 ```sh
 # React
-npm install eslint-plugin-react eslint-plugin-react-hooks
+npm install eslint-plugin-react eslint-plugin-react-hooks eslint-plugin-react-you-might-not-need-an-effect
 
 # Testing
 npm install @vitest/eslint-plugin eslint-plugin-testing-library
@@ -28,6 +28,7 @@ import unusedImports from 'eslint-plugin-unused-imports'
 import importX from 'eslint-plugin-import-x'
 import reactHooks from 'eslint-plugin-react-hooks'
 import react from 'eslint-plugin-react'
+import reactYouMightNotNeedAnEffect from 'eslint-plugin-react-you-might-not-need-an-effect'
 import vitest from '@vitest/eslint-plugin'
 import testingLibrary from 'eslint-plugin-testing-library'
 import { base, react as reactConfig, convex, testing, customPlugins } from '@dds/eslint-config'
@@ -36,7 +37,7 @@ export default [
   { ignores: ['dist/**', 'node_modules/**'] },
 
   ...base({ tseslint, unusedImports, importX, tsconfigRootDir: import.meta.dirname }),
-  ...reactConfig({ reactHooks, react }),
+  ...reactConfig({ reactHooks, react, reactYouMightNotNeedAnEffect }),
   ...convex(),
   ...testing({ vitest, testingLibrary }),
   ...customPlugins(),
@@ -53,9 +54,9 @@ Core TypeScript config. Includes `typescript-eslint` recommended rules, type-awa
 
 **Required** for all projects.
 
-### `react({ reactHooks?, react?, componentFiles?, noConsoleFiles? })`
+### `react({ reactHooks?, react?, reactYouMightNotNeedAnEffect?, componentFiles?, noConsoleFiles? })`
 
-React hooks rules, JSX correctness, and `no-console` in UI code. Both plugin arguments are optional — only the plugins you pass are activated.
+React hooks rules, `react-you-might-not-need-an-effect` recommended warnings, JSX correctness, and `no-console` in UI code. All plugin arguments are optional — only the plugins you pass are activated.
 
 - `componentFiles` — globs for React source files (default: `src/**/*.{ts,tsx}`)
 - `noConsoleFiles` — globs where `console.log` is banned (default: `src/components/**`, `src/pages/**`, `src/routes/**`)
