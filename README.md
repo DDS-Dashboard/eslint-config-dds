@@ -11,8 +11,11 @@ npm install @dds/eslint-config eslint typescript-eslint eslint-plugin-unused-imp
 Optional peer dependencies (install only what you need):
 
 ```sh
+# Base
+npm install eslint-plugin-sonarjs
+
 # React
-npm install eslint-plugin-react eslint-plugin-react-hooks eslint-plugin-react-you-might-not-need-an-effect
+npm install eslint-plugin-react eslint-plugin-react-compiler eslint-plugin-react-hooks eslint-plugin-react-you-might-not-need-an-effect
 
 # Testing
 npm install @vitest/eslint-plugin eslint-plugin-testing-library
@@ -26,8 +29,10 @@ Create an `eslint.config.mjs` in your project root:
 import tseslint from 'typescript-eslint'
 import unusedImports from 'eslint-plugin-unused-imports'
 import importX from 'eslint-plugin-import-x'
+import sonarjs from 'eslint-plugin-sonarjs'
 import reactHooks from 'eslint-plugin-react-hooks'
 import react from 'eslint-plugin-react'
+import reactCompiler from 'eslint-plugin-react-compiler'
 import reactYouMightNotNeedAnEffect from 'eslint-plugin-react-you-might-not-need-an-effect'
 import vitest from '@vitest/eslint-plugin'
 import testingLibrary from 'eslint-plugin-testing-library'
@@ -36,8 +41,8 @@ import { base, react as reactConfig, convex, testing, customPlugins } from '@dds
 export default [
   { ignores: ['dist/**', 'node_modules/**'] },
 
-  ...base({ tseslint, unusedImports, importX, tsconfigRootDir: import.meta.dirname }),
-  ...reactConfig({ reactHooks, react, reactYouMightNotNeedAnEffect }),
+  ...base({ tseslint, unusedImports, importX, sonarjs, tsconfigRootDir: import.meta.dirname }),
+  ...reactConfig({ reactHooks, react, reactCompiler, reactYouMightNotNeedAnEffect }),
   ...convex(),
   ...testing({ vitest, testingLibrary }),
   ...customPlugins(),
@@ -48,15 +53,15 @@ export default [
 
 Each export is a function that returns an array of flat config objects. Use only the layers you need.
 
-### `base({ tseslint, unusedImports, importX, tsconfigRootDir, allowDefaultProject? })`
+### `base({ tseslint, unusedImports, importX, sonarjs?, tsconfigRootDir, allowDefaultProject? })`
 
-Core TypeScript config. Includes `typescript-eslint` recommended rules, type-aware linting, unused import removal, import hygiene, `consistent-type-imports`, `func-style`, restricted globals, and more. Automatically disables type-checked rules for `.mjs`/`.js` files.
+Core TypeScript config. Includes `typescript-eslint` recommended rules, type-aware linting, unused import removal, import hygiene, `consistent-type-imports`, `func-style`, restricted globals, optional SonarJS maintainability rules, and more. Automatically disables type-checked rules for `.mjs`/`.js` files.
 
 **Required** for all projects.
 
-### `react({ reactHooks?, react?, reactYouMightNotNeedAnEffect?, componentFiles?, noConsoleFiles? })`
+### `react({ reactHooks?, react?, reactCompiler?, reactYouMightNotNeedAnEffect?, componentFiles?, noConsoleFiles? })`
 
-React hooks rules, `react-you-might-not-need-an-effect` recommended warnings, JSX correctness, and `no-console` in UI code. All plugin arguments are optional — only the plugins you pass are activated.
+React hooks rules, `react-compiler` recommended diagnostics, `react-you-might-not-need-an-effect` recommended warnings, JSX correctness, and `no-console` in UI code. All plugin arguments are optional — only the plugins you pass are activated.
 
 - `componentFiles` — globs for React source files (default: `src/**/*.{ts,tsx}`)
 - `noConsoleFiles` — globs where `console.log` is banned (default: `src/components/**`, `src/pages/**`, `src/routes/**`)

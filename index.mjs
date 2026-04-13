@@ -6,14 +6,16 @@
  *   import tseslint from 'typescript-eslint'
  *   import unusedImports from 'eslint-plugin-unused-imports'
  *   import importX from 'eslint-plugin-import-x'
+ *   import sonarjs from 'eslint-plugin-sonarjs'
  *   import reactHooks from 'eslint-plugin-react-hooks'
  *   import react from 'eslint-plugin-react'
+ *   import reactCompiler from 'eslint-plugin-react-compiler'
  *   import reactYouMightNotNeedAnEffect from 'eslint-plugin-react-you-might-not-need-an-effect'
  *
  *   export default [
  *     { ignores: ['dist/**', ...] },
- *     ...base({ tseslint, unusedImports, importX, tsconfigRootDir: import.meta.dirname }),
- *     ...react({ reactHooks, react, reactYouMightNotNeedAnEffect }),
+ *     ...base({ tseslint, unusedImports, importX, sonarjs, tsconfigRootDir: import.meta.dirname }),
+ *     ...react({ reactHooks, react, reactCompiler, reactYouMightNotNeedAnEffect }),
  *     ...convex(),
  *     ...testing({ vitest, testingLibrary }),
  *     ...customPlugins(),
@@ -32,7 +34,7 @@ import paddingPlugin from './plugins/padding-around-statements.mjs'
  * Core TypeScript config: recommended rules, type-aware linting, unused imports,
  * import hygiene, style rules, and restricted globals.
  */
-export function base({ tseslint, unusedImports, importX, tsconfigRootDir, allowDefaultProject }) {
+export function base({ tseslint, unusedImports, importX, sonarjs, tsconfigRootDir, allowDefaultProject }) {
   return [
     ...tseslint.configs.recommended,
 
@@ -68,11 +70,15 @@ export function base({ tseslint, unusedImports, importX, tsconfigRootDir, allowD
         '@typescript-eslint/consistent-type-exports': ['error', { fixMixedExportsWithInlineTypeSpecifier: true }],
         '@typescript-eslint/consistent-type-definitions': ['warn', 'type'],
         '@typescript-eslint/prefer-as-const': 'warn',
+        '@typescript-eslint/prefer-nullish-coalescing': 'warn',
+        '@typescript-eslint/prefer-optional-chain': 'warn',
         '@typescript-eslint/prefer-readonly': 'warn',
         '@typescript-eslint/no-explicit-any': 'error',
         '@typescript-eslint/no-floating-promises': 'warn',
         '@typescript-eslint/no-misused-promises': 'warn',
+        '@typescript-eslint/no-non-null-assertion': 'warn',
         '@typescript-eslint/switch-exhaustiveness-check': 'warn',
+        '@typescript-eslint/no-unnecessary-type-assertion': 'warn',
         '@typescript-eslint/no-unused-expressions': 'warn',
         '@typescript-eslint/no-unnecessary-condition': 'warn',
         '@typescript-eslint/await-thenable': 'error',
@@ -104,6 +110,16 @@ export function base({ tseslint, unusedImports, importX, tsconfigRootDir, allowD
         ],
       },
     },
+
+    // SonarJS maintainability rules
+    ...(sonarjs ? [{
+      plugins: { sonarjs },
+      rules: {
+        'sonarjs/cognitive-complexity': ['warn', 15],
+        'sonarjs/no-duplicate-string': 'warn',
+        'sonarjs/no-identical-functions': 'warn',
+      },
+    }] : []),
 
     // Import hygiene
     {
@@ -192,16 +208,18 @@ export function base({ tseslint, unusedImports, importX, tsconfigRootDir, allowD
 // ── React ───────────────────────────────────────────────────────────────────
 
 /**
- * React rules: hooks, JSX correctness, no-console in UI code.
+ * React rules: hooks, compiler diagnostics, effect guidance, JSX correctness,
+ * and no-console in UI code.
  *
  * @param {object} opts
  * @param {object} [opts.reactHooks] - eslint-plugin-react-hooks
  * @param {object} [opts.react] - eslint-plugin-react
+ * @param {object} [opts.reactCompiler] - eslint-plugin-react-compiler
  * @param {object} [opts.reactYouMightNotNeedAnEffect] - eslint-plugin-react-you-might-not-need-an-effect
  * @param {string[]} [opts.componentFiles] - Glob patterns for React files
  * @param {string[]} [opts.noConsoleFiles] - Glob patterns where console.log is banned
  */
-export function react({ reactHooks, react, reactYouMightNotNeedAnEffect, componentFiles, noConsoleFiles } = {}) {
+export function react({ reactHooks, react, reactCompiler, reactYouMightNotNeedAnEffect, componentFiles, noConsoleFiles } = {}) {
   const compFiles = componentFiles ?? ['src/**/*.{ts,tsx}', 'packages/*/src/**/*.{ts,tsx}']
   const jsxFiles = componentFiles ?? ['src/**/*.{tsx,jsx}', 'packages/*/src/**/*.{tsx,jsx}']
   const consoleFiles = noConsoleFiles ?? [
@@ -226,6 +244,13 @@ export function react({ reactHooks, react, reactYouMightNotNeedAnEffect, compone
     })
   }
 
+  if (reactCompiler) {
+    configs.push({
+      ...reactCompiler.configs.recommended,
+      files: compFiles,
+    })
+  }
+
   if (reactYouMightNotNeedAnEffect) {
     configs.push({
       ...reactYouMightNotNeedAnEffect.configs.recommended,
@@ -238,8 +263,12 @@ export function react({ reactHooks, react, reactYouMightNotNeedAnEffect, compone
       files: jsxFiles,
       plugins: { react },
       rules: {
+        'react/jsx-no-constructed-context-values': 'error',
         'react/jsx-key': 'error',
+        'react/jsx-no-useless-fragment': 'warn',
         'react/jsx-no-target-blank': 'error',
+        'react/no-array-index-key': 'warn',
+        'react/no-unstable-nested-components': 'warn',
         'react/no-children-prop': 'warn',
         'no-restricted-syntax': ['error',
           {
