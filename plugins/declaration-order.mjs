@@ -122,6 +122,7 @@ const CATEGORY_LABELS = {
 export const declarationOrder = {
   meta: {
     type: 'suggestion',
+    fixable: 'code',
     docs: {
       description: 'Enforce a consistent ordering of top-level declarations',
     },
@@ -146,39 +147,94 @@ export const declarationOrder = {
 
   create(context) {
     const order = context.options[0]?.order ?? DEFAULT_ORDER
+    const sourceCode = context.sourceCode ?? context.getSourceCode()
 
-    // Build a rank map: category → position number
     const rank = new Map()
     order.forEach((cat, i) => rank.set(cat, i))
+
+    // Range of a statement including its leading comments and any trailing
+    // comments on the same line (e.g. `const x = 1 // foo`). A comment between
+    // two statements is returned by both getCommentsAfter(prev) and
+    // getCommentsBefore(next), so we drop leading comments that sit on the
+    // same line as the previous statement's end (those belong to prev).
+    function blockRange(stmt, prevStmt) {
+      const leading = sourceCode.getCommentsBefore(stmt)
+      const trailing = sourceCode.getCommentsAfter(stmt)
+      let start = stmt.range[0]
+      let end = stmt.range[1]
+      const prevEndLine = prevStmt?.loc.end.line ?? -1
+      const firstLeading = leading.find((c) => c.loc.start.line !== prevEndLine)
+      if (firstLeading) start = firstLeading.range[0]
+      for (const c of trailing) {
+        if (c.loc.start.line === stmt.loc.end.line) {
+          end = Math.max(end, c.range[1])
+        } else break
+      }
+      return [start, end]
+    }
 
     return {
       'Program:exit'(programNode) {
         const body = programNode.body
 
-        let highestRank = -1
-        let highestCategory = null
-
-        for (const stmt of body) {
+        const items = []
+        for (let i = 0; i < body.length; i++) {
+          const stmt = body[i]
           const cat = classify(stmt)
           if (cat === 'import') continue
-
           const r = rank.get(cat)
-          if (r === undefined) continue // unknown category, skip
+          if (r === undefined) continue
+          items.push({ stmt, cat, r, originalIdx: i })
+        }
 
-          if (r < highestRank) {
-            context.report({
-              node: stmt,
-              messageId: 'outOfOrder',
-              data: {
-                name: stmtName(stmt),
-                actualLabel: CATEGORY_LABELS[cat] ?? cat,
-                expectedLabel: CATEGORY_LABELS[highestCategory] ?? highestCategory,
-              },
-            })
+        if (items.length < 2) return
+
+        const offenders = []
+        let highestRank = -1
+        let highestCategory = null
+        for (const item of items) {
+          if (item.r < highestRank) {
+            offenders.push({ ...item, expectedCategory: highestCategory })
           } else {
-            highestRank = r
-            highestCategory = cat
+            highestRank = item.r
+            highestCategory = item.cat
           }
+        }
+
+        if (offenders.length === 0) return
+
+        // Single fix that re-sorts all categorized top-level statements.
+        const sorted = items
+          .map((it, i) => ({ ...it, stableIdx: i }))
+          .sort((a, b) => (a.r - b.r) || (a.stableIdx - b.stableIdx))
+
+        const segments = items.map((it) => {
+          const prevStmt = it.originalIdx > 0 ? body[it.originalIdx - 1] : null
+          const [start, end] = blockRange(it.stmt, prevStmt)
+          return { originalIdx: it.originalIdx, start, end, text: sourceCode.text.slice(start, end) }
+        })
+        const segmentByIdx = new Map(segments.map((s) => [s.originalIdx, s]))
+
+        const replaceStart = segments[0].start
+        const replaceEnd = segments[segments.length - 1].end
+        const newText = sorted.map((it) => segmentByIdx.get(it.originalIdx).text).join('\n\n')
+
+        const fix = (fixer) => fixer.replaceTextRange([replaceStart, replaceEnd], newText)
+
+        for (let i = 0; i < offenders.length; i++) {
+          const o = offenders[i]
+          context.report({
+            node: o.stmt,
+            messageId: 'outOfOrder',
+            data: {
+              name: stmtName(o.stmt),
+              actualLabel: CATEGORY_LABELS[o.cat] ?? o.cat,
+              expectedLabel: CATEGORY_LABELS[o.expectedCategory] ?? o.expectedCategory,
+            },
+            // Attach the fix to only the first offender — overlapping fixes
+            // would otherwise be discarded by ESLint's fixer.
+            fix: i === 0 ? fix : undefined,
+          })
         }
       },
     }
